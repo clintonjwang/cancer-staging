@@ -10,13 +10,13 @@ import requests
 ### API REQUESTS
 ###########################
 
-def get_reports(user='wangkcc4', pw='pass', mrns=None):
-    if region = 'test':
+def get_reports(region='test', user='wangkcc4', pw='pass', mrns=None):
+    if region == 'test':
         stem=None#'https://montage.ynhh.org/api/v1'
-    elif region = 'prod':':
+    elif region == 'prod':
         stem='https://montage.ynhh.org/api/v1'
     else:
-        
+        print("Unsupported region")
         
     query_str = '&'.join(['format=json', 'exam_type=mri'])
     
@@ -30,20 +30,20 @@ def get_reports(user='wangkcc4', pw='pass', mrns=None):
     return r.json()
 
 def get_dcms(studies=None, region='test', user='wangkcc4', pw='pass'):
-    if region = 'test':
-        host='vnatest1vt'
-        port='8083'
-    elif region = 'prod':
-        host='vnatest1vt'
-        port='8083'
+    if region == 'test':
+        host = 'vnatest1vt'
+        port = '8083'
+    elif region == 'prod':
+        host = 'vnatest1vt'
+        port = '8083'
     else:
-        
+        print("Unsupported region")        
         
     query_str = '&'.join(['requestType=WADO','contenttype=image/jpeg'])
     
     if studies is not None:
-        query_str = '/studies'+studies
-        query_str = '/studies
+        query_str = '/studies/'+studies
+        #'1.2.826.0.1.3680043.2.'
     #'AcuoREST/search='
     #'0x00080060=ct' modality
     #'0x00100010=a*' names beginning with a
