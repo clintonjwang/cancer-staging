@@ -40,7 +40,8 @@ def get_dcms(studies=None, region='test', user='wangkcc4', pw='pass'):
         print("Unsupported region")        
         
     query_str = '&'.join(['requestType=WADO','contenttype=image/jpeg'])
-    
+#http://vnatest1vt:8083/AcuoREST/search=0x0020000D&0x00100010=acuo*
+#http://vnatest1vt:8083/AcuoREST/domains/all/studies/1.2.276.0.7230010.3.1.2.1661831521.30404.1463179091.1/binaryitems    
     if studies is not None:
         query_str = '/studies/'+studies
         #'1.2.826.0.1.3680043.2.'
@@ -89,13 +90,23 @@ def dcm_load(path2series):
     - the normalized (0-255) image
     - the spacing between pixels in cm
     """
-    tmp_fn = './tmp.nii'
-    while os.path.isfile(tmp_fn):
+    import os
+    #tmp_fn = os.getcwd()+'\\tmp'
+    tmp_fn = 'tmp'
+    while os.path.isfile(tmp_fn+'.nii'):
         tmp_fn += '+'
-
-    dicom_series_to_nifti(path2series, tmp_fn)
-    ret = ni_load(tmp_fn)
-    os.remove(tmp_fn)
+    tmp_fn += '.nii'
+    try:
+        dicom_series_to_nifti(path2series, tmp_fn)
+        ret = ni_load(tmp_fn)
+        os.remove(tmp_fn)
+    except OSError:
+        ret = ni_load(tmp_fn)
+        try:
+            os.remove(tmp_fn)
+        except:
+            print("ffff")
+            pass
 
     return ret
 
