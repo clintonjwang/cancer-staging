@@ -102,11 +102,6 @@ def dcm_load(path2series):
         os.remove(tmp_fn)
     except OSError:
         ret = ni_load(tmp_fn)
-        try:
-            os.remove(tmp_fn)
-        except:
-            print("ffff")
-            pass
 
     return ret
 
