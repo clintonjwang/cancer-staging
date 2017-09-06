@@ -94,14 +94,18 @@ def dcm_load(path2series):
     #tmp_fn = os.getcwd()+'\\tmp'
     tmp_fn = 'tmp'
     while os.path.isfile(tmp_fn+'.nii'):
-        tmp_fn += '+'
+        tmp_fn += 'p'
     tmp_fn += '.nii'
     try:
         dicom_series_to_nifti(path2series, tmp_fn)
         ret = ni_load(tmp_fn)
-        os.remove(tmp_fn)
     except OSError:
         ret = ni_load(tmp_fn)
+
+    try:
+        os.remove(tmp_fn)
+    except:
+        print("Cannot delete %s" % tmp_fn)
 
     return ret
 
