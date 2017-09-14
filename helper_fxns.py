@@ -1,4 +1,5 @@
-from dicom2nifti.convert_dicom import dicom_series_to_nifti
+from convert_dicom import dicom_series_to_nifti
+from convert_siemens import dicom_to_nifti
 import matplotlib
 import matplotlib.pyplot as plt
 import nibabel
@@ -92,15 +93,17 @@ def dcm_load(path2series):
     """
     import os
     #tmp_fn = os.getcwd()+'\\tmp'
-    tmp_fn = 'tmp'
-    while os.path.isfile(tmp_fn+'.nii'):
-        tmp_fn += 'p'
-    tmp_fn += '.nii'
-    try:
-        dicom_series_to_nifti(path2series, tmp_fn)
-        ret = ni_load(tmp_fn)
-    except OSError:
-        ret = ni_load(tmp_fn)
+    #tmp_fn = 'tmp'
+    #while os.path.isfile(tmp_fn+'.nii'):
+    #    tmp_fn += 'p'
+    tmp_fn = "tmp.nii"
+    dicom_series_to_nifti(path2series, tmp_fn)
+    #dicom_to_nifti(path2series, tmp_fn)
+
+    #tmp_fn += ".nii"
+    ret = ni_load(tmp_fn)
+    #except OSError:
+    #    ret = ni_load(tmp_fn)
 
     try:
         os.remove(tmp_fn)
@@ -131,7 +134,7 @@ def ni_load(filename):
     if dim_units == 2: #or np.sum(img) * dims[0] * dims[1] * dims[2] > 10000:
         dims = [d/10 for d in dims]
     
-    return img, dims
+    return img#, dims
 
 def apply_mask(img, mask_file):
     """Apply the mask in mask_file to img and return the masked image."""
@@ -153,8 +156,7 @@ def create_diff(art_img, pre_img):
     draw_fig(diff, 'whole')
     
     return diff
-    
-    
+
     
 #########################
 ### UTILITY
@@ -164,13 +166,6 @@ def flatten(l, times=1):
     for _ in range(times):
         l = [item for sublist in l for item in sublist]
     return l
-
-def save_img_array(img, filename, binary=True):
-    """Save a numpy array to a binary file in .npy file format.
-
-    In the future, may include options for """
-    if binary:
-        np.save(filename, img)
 
 def draw_slice(img, filename, slice=None):
     """Draw a slice of an image of type np array and save it to disk."""
