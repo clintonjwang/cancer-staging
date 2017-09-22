@@ -1,0 +1,504 @@
+--8F8334F04CC5CE4DBD91A286AAFE68BB
+Content-Type: application/dicom+xml
+Content-ID: <0@B25798293D7CD14DB05FA5B3092B9D4B>
+Content-Length: 23089
+
+<?xml version="1.0" encoding="UTF-8"?>
+<NativeDicomModel xmlns="http://dicom.nema.org/PS3.19/models/NativeDICOM" xsi:schemaLocation="http://dicom.nema.org/PS3.19/models/NativeDICOM" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xml:space="preserve">
+    <DicomAttribute tag="00020010" vr="UI" keyword="TransferSyntaxUid">
+      <Value number="1">1.2.840.10008.1.2.4.70</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080008" vr="CS" keyword="ImageType">
+      <Value number="1">ORIGINAL</Value>
+      <Value number="2">PRIMARY</Value>
+      <Value number="3">AXIAL</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080016" vr="UI" keyword="SopClassUid">
+      <Value number="1">1.2.840.10008.5.1.4.1.1.2</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080018" vr="UI" keyword="SopInstanceUid">
+      <Value number="1">1.2.392.200036.9116.2.1216060901.1336346841.684518.7.1277</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080020" vr="DA" keyword="StudyDate">
+      <Value number="1">20120507</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080021" vr="DA" keyword="SeriesDate">
+      <Value number="1">20120507</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080022" vr="DA" keyword="AcquisitionDate">
+      <Value number="1">20120507</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080023" vr="DA" keyword="ContentDate">
+      <Value number="1">20120507</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080030" vr="TM" keyword="StudyTime">
+      <Value number="1">080708</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080031" vr="TM" keyword="SeriesTime">
+      <Value number="1">080813.000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080032" vr="TM" keyword="AcquisitionTime">
+      <Value number="1">080842.600</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080033" vr="TM" keyword="ContentTime">
+      <Value number="1">080842</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080050" vr="SH" keyword="AccessionNumber">
+      <Value number="1">4144</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080060" vr="CS" keyword="Modality">
+      <Value number="1">CT</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080061" vr="CS" keyword="ModalitiesInStudy">
+      <Value number="1">CT</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080070" vr="LO" keyword="Manufacturer">
+      <Value number="1">TOSHIBA</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080080" vr="LO" keyword="InstitutionName">
+      <Value number="1">Johns Hopkins Hospital</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00080090" vr="PN" keyword="ReferringPhysiciansName">
+    </DicomAttribute>
+    <DicomAttribute tag="00081010" vr="SH" keyword="StationName">
+      <Value number="1">JHEB_CT08_BLA5</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00081030" vr="LO" keyword="StudyDescription">
+    </DicomAttribute>
+    <DicomAttribute tag="0008103E" vr="LO" keyword="SeriesDescription">
+      <Value number="1">4D-Vol. Body 0.5 CE</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00081040" vr="LO" keyword="InstitutionalDepartmentName">
+      <Value number="1">JHEB_CTOB_BLA5</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00081050" vr="PN" keyword="PerformingPhysiciansName">
+    </DicomAttribute>
+    <DicomAttribute tag="00081060" vr="PN" keyword="NameOfPhysiciansReadingStudy">
+    </DicomAttribute>
+    <DicomAttribute tag="00081070" vr="PN" keyword="OperatorsName">
+    </DicomAttribute>
+    <DicomAttribute tag="00081080" vr="LO" keyword="AdmittingDiagnosesDescription">
+    </DicomAttribute>
+    <DicomAttribute tag="00081090" vr="LO" keyword="ManufacturersModelName">
+      <Value number="1">Aquilion ONE</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00090010" vr="LO" keyword="">
+      <Value number="1">EMAGEON STUDY HOME</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00090011" vr="LO" keyword="">
+      <Value number="1">EMAGEON JPEG2K INFO</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00091000" vr="UN" keyword="">
+      <Value number="1">MDAxIA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00091001" vr="UN" keyword="">
+      <Value number="1">amhlYmNsbjJmaWMg</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00091100" vr="SQ" keyword="">
+      <Item number="1">
+          <DicomAttribute tag="00232013" vr="UN" keyword="">
+            <Value number="1">Mjc4MA==</Value>
+          </DicomAttribute>
+          <DicomAttribute tag="00232015" vr="SQ" keyword="">
+            <Item number="1">
+                <DicomAttribute tag="00232016" vr="UN" keyword="">
+                  <Value number="1">MjgxMg==</Value>
+                </DicomAttribute>
+                <DicomAttribute tag="00232017" vr="UN" keyword="">
+                  <Value number="1">AADIQgAAgEIAAEBCAAAAQgAAyEEAAKBBAACAQQAAQEEAACBBAAAAQQAAAAA=</Value>
+                </DicomAttribute>
+                <DicomAttribute tag="00232018" vr="UN" keyword="">
+                  <Value number="1">I2SpQX6Y0UFctexBAjMJQiQiFUIbrR9C6DomQmHiLkIUpC9Cdxk0QgAAgL8=</Value>
+                </DicomAttribute>
+                <DicomAttribute tag="00232019" vr="UN" keyword="">
+                  <Value number="1">NTM1MFw4MzUxXDExMjkxXDE2NzAxXDIxNTUzXDI3MjU4XDMxNjA5XDM4OTAwXDM5NjY5XDQ0MTM0XDEwODM3OA==</Value>
+                </DicomAttribute>
+            </Item>
+          </DicomAttribute>
+      </Item>
+    </DicomAttribute>
+    <DicomAttribute tag="00091101" vr="UN" keyword="">
+      <Value number="1">MjAxNDA0MzAxMzIyMzcuMDAw</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00100010" vr="PN" keyword="PatientsName">
+      <PersonName number="1">
+        <Alphabetic>
+          <FamilyName>LPA 2 SCAN 01</FamilyName>
+          <GivenName></GivenName>
+          <MiddleName></MiddleName>
+          <NamePrefix></NamePrefix>
+          <NameSuffix></NameSuffix>
+        </Alphabetic>
+      </PersonName>
+    </DicomAttribute>
+    <DicomAttribute tag="00100020" vr="LO" keyword="PatientID">
+      <Value number="1">5.7.2012</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00100021" vr="LO" keyword="IssuerOfPatientId">
+      <Value number="1">JHH</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00100030" vr="DA" keyword="PatientsBirthDate">
+    </DicomAttribute>
+    <DicomAttribute tag="00100032" vr="TM" keyword="PatientsBirthTime">
+      <Value number="1">000000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00100040" vr="CS" keyword="PatientsSex">
+    </DicomAttribute>
+    <DicomAttribute tag="00101000" vr="LO" keyword="OtherPatientIds">
+    </DicomAttribute>
+    <DicomAttribute tag="00101001" vr="PN" keyword="OtherPatientNames">
+    </DicomAttribute>
+    <DicomAttribute tag="00101005" vr="PN" keyword="PatientsBirthName">
+    </DicomAttribute>
+    <DicomAttribute tag="00101010" vr="AS" keyword="PatientsAge">
+    </DicomAttribute>
+    <DicomAttribute tag="00101020" vr="DS" keyword="PatientsSize">
+    </DicomAttribute>
+    <DicomAttribute tag="00101030" vr="DS" keyword="PatientsWeight">
+    </DicomAttribute>
+    <DicomAttribute tag="00101040" vr="LO" keyword="PatientsAddress">
+    </DicomAttribute>
+    <DicomAttribute tag="00101060" vr="PN" keyword="PatientsMothersBirthName">
+    </DicomAttribute>
+    <DicomAttribute tag="00102000" vr="LO" keyword="MedicalAlerts">
+    </DicomAttribute>
+    <DicomAttribute tag="00102110" vr="LO" keyword="Allergies">
+    </DicomAttribute>
+    <DicomAttribute tag="00102150" vr="LO" keyword="CountryOfResidence">
+    </DicomAttribute>
+    <DicomAttribute tag="00102154" vr="SH" keyword="PatientsTelephoneNumbers">
+    </DicomAttribute>
+    <DicomAttribute tag="00102160" vr="SH" keyword="EthnicGroup">
+    </DicomAttribute>
+    <DicomAttribute tag="00102180" vr="SH" keyword="Occupation">
+    </DicomAttribute>
+    <DicomAttribute tag="001021B0" vr="LT" keyword="AdditionalPatientHistory">
+    </DicomAttribute>
+    <DicomAttribute tag="00104000" vr="LT" keyword="PatientComments">
+    </DicomAttribute>
+    <DicomAttribute tag="00180010" vr="LO" keyword="ContrastBolusAgent">
+      <Value number="1">CE</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00180015" vr="CS" keyword="BodyPartExamined">
+    </DicomAttribute>
+    <DicomAttribute tag="00180022" vr="CS" keyword="ScanOptions">
+      <Value number="1">DVOLUME_CT</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00180050" vr="DS" keyword="SliceThickness">
+      <Value number="1">0.5</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00180060" vr="DS" keyword="Kvp">
+      <Value number="1">120</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00180090" vr="DS" keyword="DataCollectionDiameter">
+      <Value number="1">240.00</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181000" vr="LO" keyword="DeviceSerialNumber">
+      <Value number="1">SERIALNO</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181010" vr="LO" keyword="SecondaryCaptureDeviceId">
+    </DicomAttribute>
+    <DicomAttribute tag="00181020" vr="LO" keyword="SoftwareVersions">
+      <Value number="1">V4.63ER005</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181030" vr="LO" keyword="ProtocolName">
+      <Value number="1">RABBIT LIVER PERF (DEC 7, 2010)</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181042" vr="TM" keyword="ContrastBolusStartTime">
+      <Value number="1">080825.500</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181100" vr="DS" keyword="ReconstructionDiameter">
+      <Value number="1">175.312</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181120" vr="DS" keyword="GantryDetectorTilt">
+      <Value number="1">+0.0</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181130" vr="DS" keyword="TableHeight">
+      <Value number="1">+165.00</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181140" vr="CS" keyword="RotationDirection">
+      <Value number="1">CW</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181150" vr="IS" keyword="ExposureTime">
+      <Value number="1">500</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181151" vr="IS" keyword="XRayTubeCurrent">
+      <Value number="1">80</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181152" vr="IS" keyword="Exposure">
+      <Value number="1">40</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181160" vr="SH" keyword="FilterType">
+      <Value number="1">SMALL</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181170" vr="IS" keyword="GeneratorPower">
+      <Value number="1">9</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181190" vr="DS" keyword="FocalSpots">
+      <Value number="1">0.9</Value>
+      <Value number="2">0.8</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00181210" vr="SH" keyword="ConvolutionKernel">
+      <Value number="1">FC17</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00185100" vr="CS" keyword="PatientPosition">
+      <Value number="1">FFS</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00189345" vr="FD" keyword="Ctdivol">
+      <Value number="1">7</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="0020000D" vr="UI" keyword="StudyInstanceUid">
+      <Value number="1">1.2.392.200036.9116.2.5.1.48.1216060901.1336345628.42</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="0020000E" vr="UI" keyword="SeriesInstanceUid">
+      <Value number="1">1.2.392.200036.9116.2.1216060901.1336346550.3.1004100001.7</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00200010" vr="SH" keyword="StudyId">
+      <Value number="1">6932</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00200011" vr="IS" keyword="SeriesNumber">
+      <Value number="1">2</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00200012" vr="IS" keyword="AcquisitionNumber">
+      <Value number="1">9</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00200013" vr="IS" keyword="InstanceNumber">
+      <Value number="1">1277</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00200020" vr="CS" keyword="PatientOrientation">
+      <Value number="1">1.00000</Value>
+      <Value number="2">0.00000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00200022" vr="IS" keyword="OverlayNumberRetired">
+    </DicomAttribute>
+    <DicomAttribute tag="00200024" vr="IS" keyword="CurveNumberRetired">
+    </DicomAttribute>
+    <DicomAttribute tag="00200026" vr="IS" keyword="LookupTableNumberRetired">
+    </DicomAttribute>
+    <DicomAttribute tag="00200032" vr="DS" keyword="ImagePositionPatient">
+      <Value number="1">-79.516300</Value>
+      <Value number="2">-87.485050</Value>
+      <Value number="3">1234.750000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00200037" vr="DS" keyword="ImageOrientationPatient">
+      <Value number="1">1.00000</Value>
+      <Value number="2">0.00000</Value>
+      <Value number="3">0.00000</Value>
+      <Value number="4">0.00000</Value>
+      <Value number="5">1.00000</Value>
+      <Value number="6">0.00000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00200052" vr="UI" keyword="FrameOfReferenceUid">
+      <Value number="1">1.2.392.200036.9116.2.5.1.48.1216060901.1336345629.805008</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00201040" vr="LO" keyword="PositionReferenceIndicator">
+    </DicomAttribute>
+    <DicomAttribute tag="00201041" vr="DS" keyword="SliceLocation">
+      <Value number="1">+95.750</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00209056" vr="SH" keyword="StackId">
+      <Value number="1">1_0041_00001</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00209057" vr="UL" keyword="InStackPositionNumber">
+      <Value number="1">1277</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00209128" vr="UL" keyword="TemporalPositionIndex">
+      <Value number="1">7</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280002" vr="US" keyword="SamplesPerPixel">
+      <Value number="1">1</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280004" vr="CS" keyword="PhotometricInterpretation">
+      <Value number="1">MONOCHROME2</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280008" vr="IS" keyword="NumberOfFrames">
+      <Value number="1">1</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280010" vr="US" keyword="Rows">
+      <Value number="1">512</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280011" vr="US" keyword="Columns">
+      <Value number="1">512</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280030" vr="DS" keyword="PixelSpacing">
+      <Value number="1">0.342</Value>
+      <Value number="2">0.342</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280100" vr="US" keyword="BitsAllocated">
+      <Value number="1">16</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280101" vr="US" keyword="BitsStored">
+      <Value number="1">16</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280102" vr="US" keyword="HighBit">
+      <Value number="1">15</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00280103" vr="US" keyword="PixelRepresentation">
+      <Value number="1">1</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00281050" vr="DS" keyword="WindowCenter">
+      <Value number="1">40</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00281051" vr="DS" keyword="WindowWidth">
+      <Value number="1">400</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00281052" vr="DS" keyword="RescaleIntercept">
+      <Value number="1">0</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00281053" vr="DS" keyword="RescaleSlope">
+      <Value number="1">1</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="0032000A" vr="CS" keyword="StudyStatusIdRetired">
+      <Value number="1">COMPLETED</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00321030" vr="LO" keyword="ReasonForStudyRetired">
+    </DicomAttribute>
+    <DicomAttribute tag="00321040" vr="DA" keyword="StudyArrivalDateRetired">
+      <Value number="1">20120507</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00321041" vr="TM" keyword="StudyArrivalTimeRetired">
+      <Value number="1">152155.000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00321050" vr="DA" keyword="StudyCompletionDateRetired">
+      <Value number="1">20120515</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00321051" vr="TM" keyword="StudyCompletionTimeRetired">
+      <Value number="1">112111.000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00321070" vr="LO" keyword="RequestedContrastAgent">
+    </DicomAttribute>
+    <DicomAttribute tag="00400002" vr="DA" keyword="ScheduledProcedureStepStartDate">
+      <Value number="1">20120507</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00400003" vr="TM" keyword="ScheduledProcedureStepStartTime">
+      <Value number="1">080708.000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00400004" vr="DA" keyword="ScheduledProcedureStepEndDate">
+      <Value number="1">20120507</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00400005" vr="TM" keyword="ScheduledProcedureStepEndTime">
+      <Value number="1">083708.000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00400010" vr="SH" keyword="ScheduledStationName">
+    </DicomAttribute>
+    <DicomAttribute tag="00400244" vr="DA" keyword="PerformedProcedureStepStartDate">
+      <Value number="1">20120507</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00400245" vr="TM" keyword="PerformedProcedureStepStartTime">
+      <Value number="1">080708.000</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="00400253" vr="SH" keyword="PerformedProcedureStepId">
+      <Value number="1">6861</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="40080040" vr="SH" keyword="ResultsIdRetired">
+    </DicomAttribute>
+    <DicomAttribute tag="4008010C" vr="PN" keyword="InterpretationAuthorRetired">
+    </DicomAttribute>
+    <DicomAttribute tag="70050010" vr="LO" keyword="">
+      <Value number="1">TOSHIBA_MEC_CT3</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051006" vr="UN" keyword="">
+      <Value number="1">MDA6MTcuMyA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051007" vr="UN" keyword="">
+      <Value number="1">MjczXDI1NiA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051008" vr="UN" keyword="">
+      <Value number="1">MC41IA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005100B" vr="UN" keyword="">
+      <Value number="1">UURTKw==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005100E" vr="UN" keyword="">
+      <Value number="1">SU1HIA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005100F" vr="UN" keyword="">
+      <Value number="1">RkY=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051011" vr="UN" keyword="">
+      <Value number="1">NEQtVm9sLiA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051012" vr="UN" keyword="">
+      <Value number="1">U1U=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051013" vr="UN" keyword="">
+      <Value number="1">AQA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005101B" vr="UN" keyword="">
+      <Value number="1">RkMxNw==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005101C" vr="UN" keyword="">
+      <Value number="1">Q0U=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005101D" vr="UN" keyword="">
+      <Value number="1">AQAAAA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005101E" vr="UN" keyword="">
+      <Value number="1">AQAAAA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005101F" vr="UN" keyword="">
+      <Value number="1">MDA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051020" vr="UN" keyword="">
+      <Value number="1">AwAAAA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051021" vr="UN" keyword="">
+      <Value number="1">Qk9PU1Qg</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051024" vr="UN" keyword="">
+      <Value number="1">MjAxMjAzMTQ=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051030" vr="UN" keyword="">
+      <Value number="1">Q1Q=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051040" vr="UN" keyword="">
+      <Value number="1">MzMzMzNzUUA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051041" vr="UN" keyword="">
+      <Value number="1">MC41eDIwMCA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051043" vr="UN" keyword="">
+      <Value number="1">MC4wMDAwMFwwLjAwMDAwXDEuMDAwMDAg</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051044" vr="UN" keyword="">
+      <Value number="1">AgA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051045" vr="UN" keyword="">
+      <Value number="1">Kzg0LjAw</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051046" vr="UN" keyword="">
+      <Value number="1">LTEyNDYuNTA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051047" vr="UN" keyword="">
+      <Value number="1">MC41MDAg</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051063" vr="UN" keyword="">
+      <Value number="1">MzMzMzMzGUA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051067" vr="UN" keyword="">
+      <Value number="1">MS4yLjM5Mi4yMDAwMzYuOTExNi4yLjUuMS40OC4xMjE2MDYwOTAxLjEzMzYzNDY4NDEuNjgyNDQwAA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051068" vr="UN" keyword="">
+      <Value number="1">yAA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="70051069" vr="UN" keyword="">
+      <Value number="1">TQA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005106A" vr="UN" keyword="">
+      <Value number="1">LTc5LjUxNjMwXC04Ny40ODUwNVwxMTk2Ljc1IA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005106B" vr="UN" keyword="">
+      <Value number="1">NzkuNTE2MzBcODcuNDg1MDVcMTE5Ni43NSA=</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005106C" vr="UN" keyword="">
+      <Value number="1">MS4yLjM5Mi4yMDAwMzYuOTExNi4yLjUuMS40OC4xMjE2MDYwOTAxLjEzMzYzNDY4NDEuNjg0NTE4AA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7005106D" vr="UN" keyword="">
+      <Value number="1">MS4yLjM5Mi4yMDAwMzYuOTExNi4yLjUuMS40OC4xMjE2MDYwOTAxLjEzMzYzNDY1NTAuNDI1NjU4AA==</Value>
+    </DicomAttribute>
+    <DicomAttribute tag="7FE00010" vr="OW" keyword="PixelData">
+      <BulkData URI="http://vnatest1vt:8083/AcuoREST/dicomrs/retrieve/studies/1.2.392.200036.9116.2.5.1.48.1216060901.1336345628.42/series/1.2.392.200036.9116.2.1216060901.1336346550.3.1004100001.7/instances/1.2.392.200036.9116.2.1216060901.1336346841.684518.7.1277/bulkdata/7FE00010"/>
+    </DicomAttribute>
+</NativeDicomModel>
+
+--8F8334F04CC5CE4DBD91A286AAFE68BB--
