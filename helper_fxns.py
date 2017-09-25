@@ -8,78 +8,6 @@ import os
 import requests
 
 ###########################
-### API REQUESTS
-###########################
-
-def get_reports(region='test', user='wangkcc4', pw='pass', mrns=None):
-    if region == 'test':
-        stem=None#'https://montage.ynhh.org/api/v1'
-    elif region == 'prod':
-        stem='https://montage.ynhh.org/api/v1'
-    else:
-        print("Unsupported region")
-        
-    query_str = '&'.join(['format=json', 'exam_type=mri'])
-    
-    if mrns is not None:
-        query_str += '&patient_mrn__in='+','.join(mrns)
-        
-    url = stem + '/report/?' + query_str
-    
-    r = requests.get(url, auth=(user, pw))
-    
-    return r.json()
-
-def get_dcms(studies=None, region='test', user='wangkcc4', pw='pass'):
-    if region == 'test':
-        host = 'vnatest1vt'
-        port = '8083'
-    elif region == 'prod':
-        host = 'vnatest1vt'
-        port = '8083'
-    else:
-        print("Unsupported region")        
-        
-    query_str = '&'.join(['requestType=WADO','contenttype=image/jpeg'])
-#http://vnatest1vt:8083/AcuoREST/search=0x0020000D&0x00100010=acuo*
-#http://vnatest1vt:8083/AcuoREST/domains/all/studies/1.2.276.0.7230010.3.1.2.1661831521.30404.1463179091.1/binaryitems    
-    if studies is not None:
-        query_str = '/studies/'+studies
-        #'1.2.826.0.1.3680043.2.'
-    #'AcuoREST/search='
-    #'0x00080060=ct' modality
-    #'0x00100010=a*' names beginning with a
-    #'&studyUID='
-    #'&seriesUID='
-    #'&objectUID='
-    url = ''.join(['http://', host, ':', port, '/AcuoREST', query_str])
-    
-    r = requests.get(url, auth=(user, pw))
-    
-    return r.json()
-
-
-###########################
-### IMAGE FEATURES
-###########################
-
-def get_vol(img, dims, dim_units):
-    return np.sum(img>0) * np.prod(dims)
-
-def get_hist(img):
-    """Returns histogram in array and graphical forms."""
-    h = plt.hist(flatten(img, times=2))
-    plt.title("Histogram")
-    plt.xlabel("Value")
-    plt.ylabel("Frequency")
-    
-    #mean_intensity = np.mean(diff[img > 0])
-    #std_intensity = np.std(diff[img > 0])
-
-    return h, plt.gcf()
-
-
-###########################
 ### IMAGE PREPROCESSING
 ###########################
 
@@ -134,7 +62,7 @@ def ni_load(filename):
     if dim_units == 2: #or np.sum(img) * dims[0] * dims[1] * dims[2] > 10000:
         dims = [d/10 for d in dims]
     
-    return img#, dims
+    return img, dims
 
 def apply_mask(img, mask_file):
     """Apply the mask in mask_file to img and return the masked image."""
@@ -156,6 +84,34 @@ def create_diff(art_img, pre_img):
     draw_fig(diff, 'whole')
     
     return diff
+
+
+###########################
+### API REQUESTS
+###########################
+
+#TBD
+
+
+###########################
+### IMAGE FEATURES
+###########################
+
+def get_vol(img, dims, dim_units):
+    return np.sum(img>0) * np.prod(dims)
+
+def get_hist(img):
+    """Returns histogram in array and graphical forms."""
+    h = plt.hist(flatten(img, times=2))
+    plt.title("Histogram")
+    plt.xlabel("Value")
+    plt.ylabel("Frequency")
+    
+    #mean_intensity = np.mean(diff[img > 0])
+    #std_intensity = np.std(diff[img > 0])
+
+    return h, plt.gcf()
+
 
     
 #########################
