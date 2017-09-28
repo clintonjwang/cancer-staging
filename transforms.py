@@ -4,10 +4,10 @@ import imutils
 
 def scale3d(img, scale):
 	[scalex, scaley, scalez] = scale
-	inter = np.zeros([round(img.shape[0] * scalex), round(img.shape[1] * scaley), img.shape[2]])
-	scaled = np.zeros([round(img.shape[0] * scalex), round(img.shape[1] * scaley), round(img.shape[2] * scalez)])
 
 	if len(img.shape) == 4:
+		inter = np.zeros([round(img.shape[0] * scalex), round(img.shape[1] * scaley), img.shape[2], img.shape[3]])
+		scaled = np.zeros([round(img.shape[0] * scalex), round(img.shape[1] * scaley), round(img.shape[2] * scalez), img.shape[3]])
 		for ch in range(img.shape[-1]):
 			for s in range(img.shape[2]):
 				inter[:,:,s,ch] = cv2.resize(img[:,:,s,ch], (0,0), fx=scaley, fy=scalex)
@@ -15,6 +15,8 @@ def scale3d(img, scale):
 				scaled[s,:,:,ch] = cv2.resize(inter[s,:,:,ch], (0,0), fx=scalez, fy=1)
 
 	elif len(img.shape) == 3:
+		inter = np.zeros([round(img.shape[0] * scalex), round(img.shape[1] * scaley), img.shape[2]])
+		scaled = np.zeros([round(img.shape[0] * scalex), round(img.shape[1] * scaley), round(img.shape[2] * scalez)])
 		for s in range(img.shape[2]):
 			inter[:,:,s] = cv2.resize(img[:,:,s], (0,0), fx=scaley, fy=scalex)
 		for s in range(inter.shape[0]):
