@@ -11,6 +11,7 @@ import os
 import pyelastix
 import requests
 import random
+import shutil
 import transforms as tr
 
 ###########################
@@ -119,20 +120,41 @@ def get_spect_series(path, just_header=False):
 ### IMAGE PREPROCESSING
 ###########################
 
-def apply_mask(orig_img, mask_file):
+def get_mask(mask_file, dims):
 	"""Apply the mask in mask_file to img and return the masked image."""
-	img = copy.deepcopy(orig_img)
-
 	with open(mask_file, 'rb') as f:
 		mask = f.read()
 		mask = np.fromstring(mask, dtype='uint8')
-		mask = np.array(mask).reshape((img.shape[2], img.shape[1], img.shape[0]))
-		#mask = np.reshape(mask, img.shape, order='F')
+		mask = np.array(mask).reshape((dims[::-1]))
 		mask = np.transpose(mask, (2,1,0))
-		#mask = mask[:,::-1,:]
-		
+
+	return mask
+
+def save_mask(orig_mask, filename, template_mask_fn=None):
+	"""Assumes mask is an np.ndarray."""
+	mask = copy.deepcopy(orig_mask)
+	mask[mask != 0] = 255
+	mask = np.transpose(mask, (2,1,0))
+	mask = np.ascontiguousarray(mask).astype('uint8')
+	with open(filename, 'wb') as f:
+		f.write(mask)
+
+	if not template_mask_fn.endswith('.ics'):
+		template_mask_fn = template_mask_fn[:template_mask_fn.find('.')] + ".ics"
+
+	if template_mask_fn is not None:
+		shutil.copy(template_mask_fn, filename[:filename.find('.')] + ".ics")
+
+	return True
+
+def apply_mask(orig_img, mask_file):
+	"""Apply the mask in mask_file to img and return the masked image."""
+	img = copy.deepcopy(orig_img)
+	mask = get_mask(mask_file, img.shape)
+
 	if len(img.shape) == 4:
-		img[:,:,:,0][mask == 0] = 0
+		for ch in img.shape[3]:
+			img[:,:,:,ch][mask == 0] = 0
 	else:
 		img[mask == 0] = 0
 	#img[mask <= 0] = 0
@@ -141,15 +163,6 @@ def apply_mask(orig_img, mask_file):
 
 def rescale_mask(mask_file, orig_dims, dims):
 	"""Apply the mask in mask_file to img and return the masked image."""
-	fn_base = mask_file[:mask_file.find('.')]
-
-	with open(mask_file, 'rb') as f:
-		mask = f.read()
-		mask = np.fromstring(mask, dtype='uint8')
-		mask = np.array(mask).reshape((img.shape[2], img.shape[1], img.shape[0]))
-		#mask = np.reshape(mask, img.shape, order='F')
-		mask = np.transpose(mask, (2,1,0))
-		#mask = mask[:,::-1,:]
 
 	return img
 
@@ -194,9 +207,9 @@ def reg_imgs(moving, fixed, params, rescale_only=False):
 def get_vol(img, dims, dim_units):
 	return np.sum(img>0) * np.prod(dims)
 
-def get_hist(img):
+def get_hist(img, bins=None, plot_fig=True):
 	"""Returns histogram in array and graphical forms."""
-	h = plt.hist(flatten(img, times=2))
+	h = plt.hist(flatten(img, times=len(img.shape)-1), bins=bins)
 	plt.title("Histogram")
 	plt.xlabel("Value")
 	plt.ylabel("Frequency")

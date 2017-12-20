@@ -8,6 +8,10 @@ import SimpleITK as sitk
 import shutil
 
 
+###########################
+### ???
+###########################
+
 def transform_niis(in_img_path, transform_paths, patient_nii_paths, target_imgs=None, out_img_path=None, overwrite=True):
 	"""Transforms image based on previous transform and scaling to target_dims."""
 	
@@ -51,8 +55,14 @@ def check_dcm_paths(patient_id, patient_df):
 	if not os.path.exists(fumri_path+"\\T1_BL"):
 		print(fumri_path+"\\T1_AP")
 
-def save_nii(img, dest):
-	nii = nib.Nifti1Image(img, np.eye(4))
+def save_nii(img, dest, dims=(1,1,1)):
+	affine = np.eye(4)
+	for i in range(3):
+		affine[i,i] = dims[i]
+	if len(img.shape) == 4:
+		nii = nib.Nifti1Image(img[:,::-1,:,:], affine)
+	else:
+		nii = nib.Nifti1Image(img[:,::-1,:], affine)
 	nib.save(nii, dest)
 
 def is_segmented(patient_id):
@@ -113,8 +123,8 @@ def set_paths(patient_id, patient_df, dcm_paths, nii_paths, mask_paths):
 	for img_type in img_types:
 		nii_paths[patient_id][img_type] = base_dir + img_type + ".nii"
 
-	mask_paths[patient_id] = {"live": base_dir + "BL-segs\\BL-Liver.ids",
-				"tumo": base_dir + "BL-segs\\BL-Tumor.ids",
+	mask_paths[patient_id] = {"liver": base_dir + "BL-segs\\BL-Liver.ids",
+				"tumor": base_dir + "BL-segs\\BL-Tumor.ids",
 				"necrosis-bl": base_dir + "BL-segs\\necrosis.ids",
 				"viable-tumor-bl": base_dir + "BL-segs\\viable_tumor.ids",
 				"necrosis-fu": base_dir + "FU-segs\\necrosis.ids",
@@ -147,27 +157,31 @@ def save_niis(patient_id, dcm_paths, nii_paths, overwrite=True):
 	if (not overwrite) and os.path.exists(nii_p['spect']):
 		return
 
-	spect_img = hf.get_spect_series(dcm_paths[patient_id]['spect'])
-	fused_img = hf.get_spect_series(dcm_paths[patient_id]['fused'])
-	ct_img, _ = hf.dcm_load(dcm_paths[patient_id]['ct'])
-
-	blmri_art, _ = hf.dcm_load(dcm_paths[patient_id]['blmri-art'])
-	blmri_pre, _ = hf.dcm_load(dcm_paths[patient_id]['blmri-pre'])
-	fumri_art, _ = hf.dcm_load(dcm_paths[patient_id]['fumri-art'])
-	fumri_pre, _ = hf.dcm_load(dcm_paths[patient_id]['fumri-pre'])
-
 	nii_p = nii_paths[patient_id]
 
+	spect_img = hf.get_spect_series(dcm_paths[patient_id]['spect'])
 	save_nii(spect_img, nii_p['spect'])
+
+	fused_img = hf.get_spect_series(dcm_paths[patient_id]['fused'])
 	save_nii(fused_img, nii_p['fused'])
 	save_nii(fused_img[:,:,:,0], nii_p['fused-ch1'])
 	save_nii(fused_img[:,:,:,1], nii_p['fused-ch2'])
 	save_nii(fused_img[:,:,:,2], nii_p['fused-ch3'])
-	save_nii(ct_img, nii_p['ct'])
-	save_nii(fumri_art, nii_p['fumri-art'])
-	save_nii(fumri_pre, nii_p['fumri-pre'])
-	save_nii(blmri_art, nii_p['blmri-art'])
-	save_nii(blmri_pre, nii_p['blmri-pre'])
+
+	ct_img, dims = hf.dcm_load(dcm_paths[patient_id]['ct'])
+	save_nii(ct_img, nii_p['ct'], dims)
+
+	blmri_art, dims = hf.dcm_load(dcm_paths[patient_id]['blmri-art'])
+	save_nii(blmri_art, nii_p['blmri-art'], dims)
+
+	blmri_pre, dims = hf.dcm_load(dcm_paths[patient_id]['blmri-pre'])
+	save_nii(blmri_pre, nii_p['blmri-pre'], dims)
+
+	fumri_art, dims = hf.dcm_load(dcm_paths[patient_id]['fumri-art'])
+	save_nii(fumri_art, nii_p['fumri-art'], dims)
+
+	fumri_pre, dims = hf.dcm_load(dcm_paths[patient_id]['fumri-pre'])
+	save_nii(fumri_pre, nii_p['fumri-pre'], dims)
 
 
 ###########################
