@@ -12,6 +12,7 @@ import pyelastix
 import requests
 import random
 import shutil
+import SimpleITK as sitk
 import transforms as tr
 
 ###########################
@@ -32,7 +33,7 @@ def dcm_load(path2series):
 		dicom_series_to_nifti(path2series, tmp_fn)
 		#dicom_to_nifti(path2series, tmp_fn)
 
-		ret = ni_load(tmp_fn)
+		ret = ni_load(tmp_fn, flip_x=True, flip_y=True)
 
 	except Exception as e:
 		print(path2series, e)
@@ -45,7 +46,7 @@ def dcm_load(path2series):
 
 	return ret
 
-def ni_load(filename):
+def ni_load(filename, flip_x=False, flip_y=False, normalize=False, binary=False):
 	"""
 	Load a nifti image as a 3D array along with its dimensions.
 	
@@ -61,60 +62,67 @@ def ni_load(filename):
 	dim_units = img.header['xyzt_units']
 	
 	img = np.asarray(img.dataobj).astype(dtype='float64')
-	img = img[::-1,:,:]
-	img =  (255 * (img / np.amax(img))).astype(dtype='uint8')
+	if normalize:
+		img = 255 * (img / np.amax(img))
+	if binary:
+		img = 255 * (img / np.amax(img))
+		img = img.astype('uint8')
 	
 	if dim_units == 2: #or np.sum(img) * dims[0] * dims[1] * dims[2] > 10000:
 		dims = [d/10 for d in dims]
-	
+	if len(img.shape) == 4:
+		img = img[::(-1)**flip_x,::(-1)**flip_y,:,:]
+	else:
+		img = img[::(-1)**flip_x,::(-1)**flip_y,:]
+
 	return img, dims
 
 def get_spect_series(path, just_header=False):
-    import convert_dicom
-    import tempfile
-    import shutil
-    import dicom2nifti.settings as settings
-    import dicom2nifti.common as common
-    temp_directory = tempfile.mkdtemp()
-    dicom_directory = os.path.join(temp_directory, 'dicom')
-    shutil.copytree(path, dicom_directory)
+	import convert_dicom
+	import tempfile
+	import shutil
+	import dicom2nifti.settings as settings
+	import dicom2nifti.common as common
+	temp_directory = tempfile.mkdtemp()
+	dicom_directory = os.path.join(temp_directory, 'dicom')
+	shutil.copytree(path, dicom_directory)
 
-    if convert_dicom.is_compressed(dicom_directory):
-        if settings.gdcmconv_path is None and convert_dicom._which('gdcmconv') is None and convert_dicom._which('gdcmconv.exe') is None:
-            raise ConversionError('GDCMCONV_NOT_FOUND')
+	if convert_dicom.is_compressed(dicom_directory):
+		if settings.gdcmconv_path is None and convert_dicom._which('gdcmconv') is None and convert_dicom._which('gdcmconv.exe') is None:
+			raise ConversionError('GDCMCONV_NOT_FOUND')
 
-        convert_dicom.logger.info('Decompressing dicom files in %s' % dicom_directory)
-        for root, _, files in os.walk(dicom_directory):
-            for dicom_file in files:
-                if common.is_dicom_file(os.path.join(root, dicom_file)):
-                    convert_dicom.decompress_dicom(os.path.join(root, dicom_file))
+		convert_dicom.logger.info('Decompressing dicom files in %s' % dicom_directory)
+		for root, _, files in os.walk(dicom_directory):
+			for dicom_file in files:
+				if common.is_dicom_file(os.path.join(root, dicom_file)):
+					convert_dicom.decompress_dicom(os.path.join(root, dicom_file))
 
-    dicom_input = common.read_dicom_directory(dicom_directory)
-    
-    if just_header:
-        return dicom_input[0]
-    
-    rows = dicom_input[0][('0028', '0010')].value
-    cols = dicom_input[0][('0028', '0011')].value
-    ch = dicom_input[0][('0028', '0002')].value
-    frames = dicom_input[0][('0028', '0008')].value
-    bytelen = dicom_input[0][('0028', '0101')].value//8
+	dicom_input = common.read_dicom_directory(dicom_directory)
+	
+	if just_header:
+		return dicom_input[0]
+	
+	rows = dicom_input[0][('0028', '0010')].value
+	cols = dicom_input[0][('0028', '0011')].value
+	ch = dicom_input[0][('0028', '0002')].value
+	frames = dicom_input[0][('0028', '0008')].value
+	bytelen = dicom_input[0][('0028', '0101')].value//8
 
-    if len(dicom_input) == 1:
-        ls = list(dicom_input[0][('7fe0', '0010')].value)
-        img = [ls[x]+ls[x+1]*256 for x in range(0,len(ls),2)]
-        img = np.reshape(img,(frames,rows,cols))
-        canon_img = np.transpose(img, (2,1,0))[:,::-1,:]
-    else:
-        sl_list = []
+	if len(dicom_input) == 1:
+		ls = list(dicom_input[0][('7fe0', '0010')].value)
+		img = [ls[x]+ls[x+1]*256 for x in range(0,len(ls),2)]
+		img = np.reshape(img,(frames,rows,cols))
+		canon_img = np.transpose(img, (2,1,0))[:,::-1,:]
+	else:
+		sl_list = []
 
-        for sl in dicom_input:
-            arr = sl[('7fe0', '0010')].value
-            sl_list.append(np.reshape(list(arr),(rows,cols,ch)))
-        img = np.array(sl_list)
-        canon_img = np.transpose(img, (2,1,0,3))[:,::-1,:,:]
+		for sl in dicom_input:
+			arr = sl[('7fe0', '0010')].value
+			sl_list.append(np.reshape(list(arr),(rows,cols,ch)))
+		img = np.array(sl_list)
+		canon_img = np.transpose(img, (2,1,0,3))[:,::-1,:,:]
 
-    return canon_img
+	return canon_img
 
 ###########################
 ### IMAGE PREPROCESSING
@@ -179,6 +187,10 @@ def normalize(img):
 	i_min = np.amin(img)
 	return (img - i_min) / (np.amax(img) - i_min) * 255
 
+###########################
+### REGISTRATION
+###########################
+
 def reg_imgs(moving, fixed, params, rescale_only=False):
 	reg_img = copy.deepcopy(moving)
 	try:
@@ -198,6 +210,47 @@ def reg_imgs(moving, fixed, params, rescale_only=False):
 
 		
 	return reg_img, field
+
+def reg_img(fixed_path, moving_path, out_transform_path, out_img_path, verbose=False, filter_type="Demons"):
+	"""Assumes fixed and moving images are the same dimensions"""
+
+	fixed = sitk.ReadImage(fixed_path, sitk.sitkFloat32)
+	moving = sitk.ReadImage(moving_path, sitk.sitkFloat32)
+
+	matcher = sitk.HistogramMatchingImageFilter()
+	matcher.SetNumberOfHistogramLevels(1024)
+	matcher.SetNumberOfMatchPoints(7)
+	matcher.ThresholdAtMeanIntensityOn()
+	moving = matcher.Execute(moving,fixed)
+
+	if filter_type == "Demons":
+		demons = sitk.DemonsRegistrationFilter()
+		demons.SetNumberOfIterations( 25 )
+		demons.SetStandardDeviations( 1.0 )
+	else:
+		pass
+
+	if verbose:
+		def command_iteration(filter):
+			print("{0:3} = {1:10.5f}".format(filter.GetElapsedIterations(), filter.GetMetric()))
+		demons.AddCommand( sitk.sitkIterationEvent, lambda: command_iteration(demons) )
+
+	displacementField = demons.Execute( fixed, moving )
+
+	outTx = sitk.DisplacementFieldTransform( displacementField )
+	sitk.WriteTransform(outTx, out_transform_path)
+	sitk.WriteImage(moving, out_img_path)
+
+def transform(moving_path, transform_path, target_path=None):
+	"""Transforms without scaling image"""
+	
+	if target_path is None:
+		target_path = moving_path
+	
+	moving = sitk.ReadImage(moving_path, sitk.sitkFloat32)
+	tx = sitk.ReadTransform(transform_path)
+	moving_reg = sitk.Resample(moving, tx)
+	sitk.WriteImage(moving_reg, target_path)
 
 
 ###########################
@@ -219,6 +272,7 @@ def get_hist(img, bins=None, plot_fig=True):
 
 	return h, plt.gcf()
 	
+
 #########################
 ### UTILITY
 #########################
@@ -242,25 +296,25 @@ def plot_section_auto(orig_img, normalize=False, frac=None):
 
 		if frac is None:
 			plt.subplot(131)
-			_plot_without_axes(np.transpose(img[:, ::-1, img.shape[2]//2, 0], (1,0)), cmap='gray')
+			_plot_without_axes(np.transpose(img[:, :, img.shape[2]//2, 0], (1,0)), cmap='gray')
 			plt.subplot(132)
-			_plot_without_axes(np.transpose(img[:, ::-1, img.shape[2]//2, 1], (1,0)), cmap='gray')
+			_plot_without_axes(np.transpose(img[:, :, img.shape[2]//2, 1], (1,0)), cmap='gray')
 			plt.subplot(133)
-			_plot_without_axes(np.transpose(img[:, ::-1, img.shape[2]//2, 2], (1,0)), cmap='gray')
+			_plot_without_axes(np.transpose(img[:, :, img.shape[2]//2, 2], (1,0)), cmap='gray')
 		else:
 			plt.subplot(231)
-			_plot_without_axes(np.transpose(img[:, ::-1, img.shape[2]//2, 0], (1,0)), cmap='gray')
+			_plot_without_axes(np.transpose(img[:, :, img.shape[2]//2, 0], (1,0)), cmap='gray')
 			plt.subplot(232)
-			_plot_without_axes(np.transpose(img[:, ::-1, img.shape[2]//2, 1], (1,0)), cmap='gray')
+			_plot_without_axes(np.transpose(img[:, :, img.shape[2]//2, 1], (1,0)), cmap='gray')
 			plt.subplot(233)
-			_plot_without_axes(np.transpose(img[:, ::-1, img.shape[2]//2, 2], (1,0)), cmap='gray')
+			_plot_without_axes(np.transpose(img[:, :, img.shape[2]//2, 2], (1,0)), cmap='gray')
 
 			plt.subplot(234)
-			_plot_without_axes(np.transpose(img[:, ::-1, int(img.shape[2]*frac), 0], (1,0)), cmap='gray')
+			_plot_without_axes(np.transpose(img[:, :, int(img.shape[2]*frac), 0], (1,0)), cmap='gray')
 			plt.subplot(235)
-			_plot_without_axes(np.transpose(img[:, ::-1, int(img.shape[2]*frac), 1], (1,0)), cmap='gray')
+			_plot_without_axes(np.transpose(img[:, :, int(img.shape[2]*frac), 1], (1,0)), cmap='gray')
 			plt.subplot(236)
-			_plot_without_axes(np.transpose(img[:, ::-1, int(img.shape[2]*frac), 2], (1,0)), cmap='gray')
+			_plot_without_axes(np.transpose(img[:, :, int(img.shape[2]*frac), 2], (1,0)), cmap='gray')
 
 	else:
 		img = copy.deepcopy(orig_img)
@@ -269,11 +323,11 @@ def plot_section_auto(orig_img, normalize=False, frac=None):
 			img[0,-1,:]=.8
 
 		plt.subplot(131)
-		_plot_without_axes(np.transpose(img[:, ::-1, img.shape[2]//4], (1,0)), cmap='gray')
+		_plot_without_axes(np.transpose(img[:, :, img.shape[2]//4], (1,0)), cmap='gray')
 		plt.subplot(132)
-		_plot_without_axes(np.transpose(img[:, ::-1, img.shape[2]//2], (1,0)), cmap='gray')
+		_plot_without_axes(np.transpose(img[:, :, img.shape[2]//2], (1,0)), cmap='gray')
 		plt.subplot(133)
-		_plot_without_axes(np.transpose(img[:, ::-1, img.shape[2]*3//4], (1,0)), cmap='gray')
+		_plot_without_axes(np.transpose(img[:, :, img.shape[2]*3//4], (1,0)), cmap='gray')
 
 	plt.subplots_adjust(wspace=0, hspace=0)
 
