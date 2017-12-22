@@ -96,29 +96,28 @@ def save_niis(patient_id, dcm_paths, nii_paths, overwrite=True):
 	nii_p = nii_paths[patient_id]
 
 	spect_img = hf.get_spect_series(dcm_paths[patient_id]['spect'])
-	save_nii(spect_img, nii_p['spect'], flip_x=True, flip_y=True)
+	save_nii(spect_img, nii_p['spect'])
 
 	fused_img = hf.get_spect_series(dcm_paths[patient_id]['fused'])
-	fused_img = fused_img[::-1,::-1,:,:]
 	save_nii(fused_img, nii_p['fused'])
 	save_nii(fused_img[:,:,:,0], nii_p['fused-ch1'])
 	save_nii(fused_img[:,:,:,1], nii_p['fused-ch2'])
 	save_nii(fused_img[:,:,:,2], nii_p['fused-ch3'])
 
 	ct_img, dims = hf.dcm_load(dcm_paths[patient_id]['ct'])
-	save_nii(ct_img, nii_p['ct'], dims, flip_x=True, flip_y=True)
+	save_nii(ct_img, nii_p['ct'], dims)
 
 	blmri_art, dims = hf.dcm_load(dcm_paths[patient_id]['blmri-art'])
-	save_nii(blmri_art, nii_p['blmri-art'], dims, flip_x=True, flip_y=True)
+	save_nii(blmri_art, nii_p['blmri-art'], dims)
 
 	blmri_pre, dims = hf.dcm_load(dcm_paths[patient_id]['blmri-pre'])
-	save_nii(blmri_pre, nii_p['blmri-pre'], dims, flip_x=True, flip_y=True)
+	save_nii(blmri_pre, nii_p['blmri-pre'], dims)
 
 	fumri_art, dims = hf.dcm_load(dcm_paths[patient_id]['fumri-art'])
-	save_nii(fumri_art, nii_p['fumri-art'], dims, flip_x=True, flip_y=True)
+	save_nii(fumri_art, nii_p['fumri-art'], dims)
 
 	fumri_pre, dims = hf.dcm_load(dcm_paths[patient_id]['fumri-pre'])
-	save_nii(fumri_pre, nii_p['fumri-pre'], dims, flip_x=True, flip_y=True)
+	save_nii(fumri_pre, nii_p['fumri-pre'], dims)
 
 
 ###########################
@@ -174,25 +173,45 @@ def reg_all_niis(patient_id, nii_paths, verbose=True):
 	os.remove(temp_file)
 	print(time.time() - t)
 
-def reg_niis(fixed_img_type, moving_img_type, patient_nii_paths, fixed_img=None,
-			 moving_img=None, out_img_path=None, out_transform_path=None, overwrite=False):
+def reg_niis(fixed_img_type, moving_img_type, patient_nii_paths, 
+			 out_img_path="default", out_transform_path="default", overwrite=False):
 	"""Registers images. 
 	"""
+	import importlib
+	importlib.reload(hf)
 	
+	if out_transform_path == "default":
+		out_transform_path = patient_nii_paths['base'] + moving_img_type+'_'+fixed_img_type+'_xform.txt'
+	
+	if (not overwrite) and os.path.exists(out_img_path):
+		print(out_img_path, "already exists. Skipping registration.")
+		return None
+
+	out_img_path, out_transform_path = hf.reg_bis(patient_nii_paths[fixed_img_type],
+				patient_nii_paths[moving_img_type], out_transform_path, out_img_path)
+	
+	return out_img_path, out_transform_path
+
+def reg_niis_sitk(fixed_img_type, moving_img_type, patient_nii_paths, 
+			 moving_img=None, out_img_path=None, out_transform_path=None, overwrite=False, verbose=False, reg_type='demons'):
+	"""Registers images. 
+	"""
+	import importlib
+	importlib.reload(hf)
+
 	if out_img_path is None:
-		out_img_path = add_to_filename(patient_nii_paths[moving_img_type], "-reg")
+		out_img_path = hf.add_to_filename(patient_nii_paths[moving_img_type], "-reg")
 		
 	if out_transform_path is None:
 		out_transform_path = patient_nii_paths['base'] + moving_img_type+'_'+fixed_img_type+'_transform.hdf5'
 		
-	temp_path = add_to_filename(patient_nii_paths[moving_img_type],"-scaled")
+	temp_path = hf.add_to_filename(patient_nii_paths[moving_img_type],"-scaled")
 		
 	if (not overwrite) and os.path.exists(out_img_path):
 		print(out_img_path, "already exists. Skipping registration.")
 		return None
 	
-	if fixed_img is None:
-		fixed_img, voxdims = hf.ni_load(patient_nii_paths[fixed_img_type])
+	fixed_img, voxdims = hf.ni_load(patient_nii_paths[fixed_img_type])
 	if moving_img is None:
 		moving_img, _ = hf.ni_load(patient_nii_paths[moving_img_type])
 		
@@ -203,22 +222,47 @@ def reg_niis(fixed_img_type, moving_img_type, patient_nii_paths, fixed_img=None,
 	moving_img_scaled, _ = hf.rescale(moving_img, fixed_img.shape)
 	save_nii(moving_img_scaled, temp_path, dims=voxdims)
 	
-	hf.reg_img(patient_nii_paths[fixed_img_type], temp_path, out_transform_path, out_img_path)
+	hf.reg_img(patient_nii_paths[fixed_img_type], temp_path, out_transform_path, out_img_path, verbose=verbose, reg_type=reg_type)
 	
 	os.remove(temp_path)
 	
 	return out_img_path, out_transform_path
 
-def transform_niis(in_img_path, transform_paths, patient_nii_paths, target_imgs=None, out_img_path=None, overwrite=True):
+def transform_niis(in_img_path, transform_paths, target_imgs, out_img_path=None, overwrite=True):
 	"""Transforms image based on previous transform and scaling to target_dims."""
 	
 	if out_img_path is None:
-		out_img_path = add_to_filename(in_img_path, "-reg")
+		out_img_path = hf.add_to_filename(in_img_path, "-reg")
 	if (not overwrite) and os.path.exists(out_img_path):
 		print(out_img_path, "already exists. Skipping transform.")
 		return False
 		
-	temp_path = add_to_filename(in_img_path, "-temp")
+	temp_path = hf.add_to_filename(in_img_path, "-temp")
+		
+	shutil.copyfile(in_img_path, temp_path)
+	
+	for index, transform_path in enumerate(transform_paths):
+		target_img = target_imgs[index]
+		hf.transform(temp_path, transform_path)
+		save_nii(hf.rescale(hf.ni_load(temp_path)[0], target_img.shape)[0], temp_path)
+	
+	if temp_path != out_img_path:
+		if os.path.exists(out_img_path):
+			os.remove(out_img_path)
+		os.rename(temp_path, out_img_path)
+	
+	return True
+
+def transform_niis_sitk(in_img_path, transform_paths, patient_nii_paths, target_imgs=None, out_img_path=None, overwrite=True):
+	"""Transforms image based on previous transform and scaling to target_dims."""
+	
+	if out_img_path is None:
+		out_img_path = hf.add_to_filename(in_img_path, "-reg")
+	if (not overwrite) and os.path.exists(out_img_path):
+		print(out_img_path, "already exists. Skipping transform.")
+		return False
+		
+	temp_path = hf.add_to_filename(in_img_path, "-temp")
 		
 	shutil.copyfile(in_img_path, temp_path)
 	
@@ -399,11 +443,3 @@ def segment_tumor(art, pre, liver_mask, tumor_mask, enh_mask_path, nec_mask_path
 		hf.save_mask(nec_mask, nec_mask_path, template_mask_fn=template_mask_fn)
 	
 	return enh_mask, nec_mask
-	
-###########################
-### MISC
-###########################
-
-def add_to_filename(fn, addition):
-	x = fn.find(".")
-	return fn[:x] + addition + fn[x:]

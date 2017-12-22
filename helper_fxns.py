@@ -13,6 +13,7 @@ import requests
 import random
 import shutil
 import SimpleITK as sitk
+import subprocess
 import transforms as tr
 
 ###########################
@@ -33,7 +34,7 @@ def dcm_load(path2series):
 		dicom_series_to_nifti(path2series, tmp_fn)
 		#dicom_to_nifti(path2series, tmp_fn)
 
-		ret = ni_load(tmp_fn, flip_x=True, flip_y=True)
+		ret = ni_load(tmp_fn)
 
 	except Exception as e:
 		print(path2series, e)
@@ -128,6 +129,13 @@ def get_spect_series(path, just_header=False):
 ### IMAGE PREPROCESSING
 ###########################
 
+def create_threshold_mask(img, mask_filename, threshold, template_mask_fn=None):
+	"""Create and save a mask of orig_img based on a threshold value."""
+	mask = np.zeros(img.shape)
+	mask[img > threshold] = 255
+	mask = mask.astype('uint8')
+	save_mask(mask, mask_filename, template_mask_fn)
+
 def get_mask(mask_file, dims):
 	"""Apply the mask in mask_file to img and return the masked image."""
 	with open(mask_file, 'rb') as f:
@@ -147,10 +155,9 @@ def save_mask(orig_mask, filename, template_mask_fn=None):
 	with open(filename, 'wb') as f:
 		f.write(mask)
 
-	if not template_mask_fn.endswith('.ics'):
-		template_mask_fn = template_mask_fn[:template_mask_fn.find('.')] + ".ics"
-
 	if template_mask_fn is not None:
+		if not template_mask_fn.endswith('.ics'):
+			template_mask_fn = template_mask_fn[:template_mask_fn.find('.')] + ".ics"
 		shutil.copy(template_mask_fn, filename[:filename.find('.')] + ".ics")
 
 	return True
@@ -191,6 +198,33 @@ def normalize(img):
 ### REGISTRATION
 ###########################
 
+def reg_bis(fixed_img_path, moving_img_path, out_transform_path="default", out_img_path="default", path_to_bis="C:\\yale\\bioimagesuite35\\bin\\"):
+	"""BioImageSuite"""
+
+	temp_img_path = ".\\temp_out_img.nii"
+	if out_transform_path is None:
+		out_transform_path = ".\\to_delete.txt"
+	elif out_transform_path == "default":
+		out_transform_path = add_to_filename(moving_img_path, "-xform")
+
+	if out_img_path == "default":
+		out_img_path = add_to_filename(moving_img_path, "-reg")
+	
+	cmd = ''.join([path_to_bis, "bis_linearintensityregister.bat -inp ", fixed_img_path,
+			  " -inp2 ", moving_img_path, " -out ", out_transform_path]).replace("\\","/")
+
+	subprocess.run(cmd.split())
+	if out_img_path is not None:
+		shutil.copy(temp_img_path, out_img_path)
+	os.remove(temp_img_path)
+	if out_transform_path == ".\\to_delete.txt":
+		os.remove(out_transform_path)
+
+	return out_img_path, out_transform_path
+
+def reg_elastix(*args):
+	reg_imgs(args)
+
 def reg_imgs(moving, fixed, params, rescale_only=False):
 	reg_img = copy.deepcopy(moving)
 	try:
@@ -211,35 +245,194 @@ def reg_imgs(moving, fixed, params, rescale_only=False):
 		
 	return reg_img, field
 
-def reg_img(fixed_path, moving_path, out_transform_path, out_img_path, verbose=False, filter_type="Demons"):
+def reg_img(fixed_path, moving_path, out_transform_path, out_img_path, verbose=False, reg_type="demons"):
 	"""Assumes fixed and moving images are the same dimensions"""
 
 	fixed = sitk.ReadImage(fixed_path, sitk.sitkFloat32)
 	moving = sitk.ReadImage(moving_path, sitk.sitkFloat32)
 
-	matcher = sitk.HistogramMatchingImageFilter()
-	matcher.SetNumberOfHistogramLevels(1024)
-	matcher.SetNumberOfMatchPoints(7)
-	matcher.ThresholdAtMeanIntensityOn()
-	moving = matcher.Execute(moving,fixed)
+	if reg_type == "demons":
+		matcher = sitk.HistogramMatchingImageFilter()
+		matcher.SetNumberOfHistogramLevels(1024)
+		matcher.SetNumberOfMatchPoints(7)
+		matcher.ThresholdAtMeanIntensityOn()
+		moving = matcher.Execute(moving,fixed)
+		
+		R = sitk.DemonsRegistrationFilter()
+		R.SetNumberOfIterations( 50 )
+		R.SetStandardDeviations( 1.0 )
 
-	if filter_type == "Demons":
-		demons = sitk.DemonsRegistrationFilter()
-		demons.SetNumberOfIterations( 25 )
-		demons.SetStandardDeviations( 1.0 )
+		if verbose:
+			def command_iteration(filter):
+				print("{0:3} = {1:10.5f}".format(filter.GetElapsedIterations(), filter.GetMetric()))
+			R.AddCommand( sitk.sitkIterationEvent, lambda: command_iteration(R) )
+	
+		displacementField = R.Execute( fixed, moving )
+		outTx = sitk.DisplacementFieldTransform( displacementField )
+
 	else:
-		pass
+		R = sitk.ImageRegistrationMethod()
+
+		if reg_type == 'sgd-ms':
+			R.SetMetricAsMeanSquares()
+			R.SetOptimizerAsRegularStepGradientDescent(4.0, .01, 200 )
+			R.SetInitialTransform(sitk.TranslationTransform(fixed.GetDimension()))
+
+		elif reg_type == 'gdls':
+			fixed = sitk.Normalize(fixed)
+			fixed = sitk.DiscreteGaussian(fixed, 2.0)
+			moving = sitk.Normalize(moving)
+			moving = sitk.DiscreteGaussian(moving, 2.0)
+
+			R.SetMetricAsJointHistogramMutualInformation()
+			R.SetOptimizerAsGradientDescentLineSearch(learningRate=1.0,
+										  numberOfIterations=200,
+										  convergenceMinimumValue=1e-5,
+										  convergenceWindowSize=5)
+			R.SetInitialTransform(sitk.TranslationTransform(fixed.GetDimension()))
+
+		elif reg_type == 'sgd-corr':
+			#doesn't work
+			R.SetMetricAsCorrelation()
+			R.SetOptimizerAsRegularStepGradientDescent(learningRate=2.0,
+										   minStep=1e-4,
+										   numberOfIterations=500,
+										   gradientMagnitudeTolerance=1e-8 )
+			R.SetOptimizerScalesFromIndexShift()
+			tx = sitk.CenteredTransformInitializer(fixed, moving, sitk.Similarity2DTransform())
+			R.SetInitialTransform(tx)
+
+
+		elif reg_type == 'sgd-mi':
+			numberOfBins = 24
+			samplingPercentage = 0.10
+
+			R.SetMetricAsMattesMutualInformation(numberOfBins)
+			R.SetMetricSamplingPercentage(samplingPercentage,sitk.sitkWallClock)
+			R.SetMetricSamplingStrategy(R.RANDOM)
+			R.SetOptimizerAsRegularStepGradientDescent(1.0,.001,200)
+			R.SetInitialTransform(sitk.TranslationTransform(fixed.GetDimension()))
+
+
+		elif reg_type == 'bspline-corr':
+			transformDomainMeshSize=[8]*moving.GetDimension()
+			tx = sitk.BSplineTransformInitializer(fixed, transformDomainMeshSize )
+			
+			R.SetMetricAsCorrelation()
+
+			R.SetOptimizerAsLBFGSB(gradientConvergenceTolerance=1e-5,
+								   numberOfIterations=100,
+								   maximumNumberOfCorrections=5,
+								   maximumNumberOfFunctionEvaluations=1000,
+								   costFunctionConvergenceFactor=1e+7)
+			R.SetInitialTransform(tx, True)
+
+		elif reg_type == 'bspline-mi':
+			transformDomainMeshSize=[10]*moving.GetDimension()
+			tx = sitk.BSplineTransformInitializer(fixed, transformDomainMeshSize )
+			
+			R.SetMetricAsMattesMutualInformation(50)
+			R.SetOptimizerAsGradientDescentLineSearch(5.0, 100,
+													  convergenceMinimumValue=1e-4,
+													  convergenceWindowSize=5)
+			R.SetOptimizerScalesFromPhysicalShift( )
+			R.SetInitialTransform(tx)
+
+		elif reg_type == 'disp':
+			initialTx = sitk.CenteredTransformInitializer(fixed, moving, sitk.AffineTransform(fixed.GetDimension()))
+
+			R = sitk.ImageRegistrationMethod()
+
+			R.SetShrinkFactorsPerLevel([3,2,1])
+			R.SetSmoothingSigmasPerLevel([2,1,1])
+
+			R.SetMetricAsJointHistogramMutualInformation(20)
+			R.MetricUseFixedImageGradientFilterOff()
+			R.MetricUseFixedImageGradientFilterOff()
+
+
+			R.SetOptimizerAsGradientDescent(learningRate=1.0,
+											numberOfIterations=100,
+											estimateLearningRate = R.EachIteration)
+			R.SetOptimizerScalesFromPhysicalShift()
+
+			R.SetInitialTransform(initialTx,inPlace=True)
+
+		elif reg_type == 'exhaust':
+			R = sitk.ImageRegistrationMethod()
+
+			R.SetMetricAsMattesMutualInformation(numberOfHistogramBins = 50)
+
+			sample_per_axis=12
+			if fixed.GetDimension() == 2:
+				tx = sitk.Euler2DTransform()
+				# Set the number of samples (radius) in each dimension, with a
+				# default step size of 1.0
+				R.SetOptimizerAsExhaustive([sample_per_axis//2,0,0])
+				# Utilize the scale to set the step size for each dimension
+				R.SetOptimizerScales([2.0*pi/sample_per_axis, 1.0,1.0])
+			elif fixed.GetDimension() == 3:
+				tx = sitk.Euler3DTransform()
+				R.SetOptimizerAsExhaustive([sample_per_axis//2,sample_per_axis//2,sample_per_axis//4,0,0,0])
+				R.SetOptimizerScales([2.0*pi/sample_per_axis,2.0*pi/sample_per_axis,2.0*pi/sample_per_axis,1.0,1.0,1.0])
+
+			# Initialize the transform with a translation and the center of
+			# rotation from the moments of intensity.
+			tx = sitk.CenteredTransformInitializer(fixed, moving, tx)
+
+			R.SetInitialTransform(tx)
+
+
+		R.SetInterpolator(sitk.sitkLinear)
+
+		if reg_type == 'bspline-mi':
+			R.SetShrinkFactorsPerLevel([6,2,1])
+			R.SetSmoothingSigmasPerLevel([6,2,1])
+
+
+		if verbose:
+			def command_iteration(method) :
+				print("{0:3} = {1:10.5f} : {2}".format(method.GetOptimizerIteration(),
+											   method.GetMetricValue(),
+											   method.GetOptimizerPosition()))
+			R.AddCommand( sitk.sitkIterationEvent, lambda: command_iteration(R) )
+
+		outTx = R.Execute(fixed, moving)
+
+		if reg_type == 'disp':
+			R.SetMovingInitialTransform(outTx)
+			R.SetInitialTransform(displacementTx, inPlace=True)
+
+			R.SetMetricAsANTSNeighborhoodCorrelation(4)
+			R.MetricUseFixedImageGradientFilterOff()
+			R.MetricUseFixedImageGradientFilterOff()
+
+
+			R.SetShrinkFactorsPerLevel([3,2,1])
+			R.SetSmoothingSigmasPerLevel([2,1,1])
+
+			R.SetOptimizerScalesFromPhysicalShift()
+			R.SetOptimizerAsGradientDescent(learningRate=1,
+											numberOfIterations=300,
+											estimateLearningRate=R.EachIteration)
+
+			outTx.AddTransform( R.Execute(fixed, moving) )
 
 	if verbose:
-		def command_iteration(filter):
-			print("{0:3} = {1:10.5f}".format(filter.GetElapsedIterations(), filter.GetMetric()))
-		demons.AddCommand( sitk.sitkIterationEvent, lambda: command_iteration(demons) )
+		print("-------")
+		print(outTx)
+		print("Optimizer stop condition: {0}".format(R.GetOptimizerStopConditionDescription()))
+		print(" Iteration: {0}".format(R.GetOptimizerIteration()))
+		print(" Metric value: {0}".format(R.GetMetricValue()))
 
-	displacementField = demons.Execute( fixed, moving )
-
-	outTx = sitk.DisplacementFieldTransform( displacementField )
+	resampler = sitk.ResampleImageFilter()
+	resampler.SetReferenceImage(fixed)
+	resampler.SetInterpolator(sitk.sitkLinear)
+	resampler.SetDefaultPixelValue(0)
+	resampler.SetTransform(outTx)
+	out_img = resampler.Execute(moving)
 	sitk.WriteTransform(outTx, out_transform_path)
-	sitk.WriteImage(moving, out_img_path)
+	sitk.WriteImage(out_img, out_img_path)
 
 def transform(moving_path, transform_path, target_path=None):
 	"""Transforms without scaling image"""
@@ -379,3 +572,11 @@ def draw_slice(img, filename, slice=None):
 	print('Slice saved as %s' % filename)
 	fig.set_size_inches(w//3,h//3)
 	plt.show()
+	
+###########################
+### MISC
+###########################
+
+def add_to_filename(fn, addition):
+	x = fn.find(".")
+	return fn[:x] + addition + fn[x:]
