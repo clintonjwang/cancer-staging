@@ -5,7 +5,7 @@ import dicom
 import math
 import matplotlib
 import matplotlib.pyplot as plt
-import nibabel
+import nibabel as nib
 import numpy as np
 import os
 import pyelastix
@@ -56,8 +56,8 @@ def ni_load(filename, flip_x=False, flip_y=False, normalize=False, binary=False)
 	- the spacing between pixels in cm
 	"""
 	
-	img = nibabel.load(filename)
-	img = nibabel.as_closest_canonical(img) # make sure it is in the correct orientation
+	img = nib.load(filename)
+	img = nib.as_closest_canonical(img) # make sure it is in the correct orientation
 
 	dims = img.header['pixdim'][1:4]
 	dim_units = img.header['xyzt_units']
@@ -124,6 +124,19 @@ def get_spect_series(path, just_header=False):
 		canon_img = np.transpose(img, (2,1,0,3))[:,::-1,:,:]
 
 	return canon_img
+
+def save_nii(img, dest, dims=(1,1,1), affine=None, flip_x=False, flip_y=False):
+	if affine is None:
+		affine = np.eye(4)
+		for i in range(3):
+			affine[i,i] = dims[i]
+		if len(img.shape) == 4:
+			nii = nib.Nifti1Image(img[::(-1)**flip_x,::(-1)**flip_y,:,:], affine)
+		else:
+			nii = nib.Nifti1Image(img[::(-1)**flip_x,::(-1)**flip_y,:], affine)
+		nib.save(nii, dest)
+	else:
+		nib.save(img, dest)
 
 ###########################
 ### IMAGE PREPROCESSING
@@ -198,27 +211,30 @@ def normalize(img):
 ### REGISTRATION
 ###########################
 
-def reg_bis(fixed_img_path, moving_img_path, out_transform_path="default", out_img_path="default", path_to_bis="C:\\yale\\bioimagesuite35\\bin\\"):
-	"""BioImageSuite"""
+def reg_bis(fixed_img_path, moving_img_path, out_transform_path="default", out_img_path="default",
+	path_to_bis="C:\\yale\\bioimagesuite35\\bin\\"):
+	"""BioImageSuite. Shutil required because BIS cannot output to other drives,
+	and because the output image argument is broken."""
 
 	temp_img_path = ".\\temp_out_img.nii"
-	if out_transform_path is None:
-		out_transform_path = ".\\to_delete.txt"
-	elif out_transform_path == "default":
+	temp_xform_path = ".\\temp_out_xform"
+	
+	if out_transform_path == "default":
 		out_transform_path = add_to_filename(moving_img_path, "-xform")
 
 	if out_img_path == "default":
 		out_img_path = add_to_filename(moving_img_path, "-reg")
 	
 	cmd = ''.join([path_to_bis, "bis_linearintensityregister.bat -inp ", fixed_img_path,
-			  " -inp2 ", moving_img_path, " -out ", out_transform_path]).replace("\\","/")
+			  " -inp2 ", moving_img_path, " -out ", temp_xform_path]).replace("\\","/")
 
 	subprocess.run(cmd.split())
 	if out_img_path is not None:
 		shutil.copy(temp_img_path, out_img_path)
+	if out_transform_path is not None:
+		shutil.copy(temp_xform_path, out_transform_path)
 	os.remove(temp_img_path)
-	if out_transform_path == ".\\to_delete.txt":
-		os.remove(out_transform_path)
+	os.remove(temp_xform_path)
 
 	return out_img_path, out_transform_path
 
@@ -245,7 +261,7 @@ def reg_imgs(moving, fixed, params, rescale_only=False):
 		
 	return reg_img, field
 
-def reg_img(fixed_path, moving_path, out_transform_path, out_img_path, verbose=False, reg_type="demons"):
+def reg_sitk(fixed_path, moving_path, out_transform_path, out_img_path, verbose=False, reg_type="demons"):
 	"""Assumes fixed and moving images are the same dimensions"""
 
 	fixed = sitk.ReadImage(fixed_path, sitk.sitkFloat32)
@@ -434,7 +450,28 @@ def reg_img(fixed_path, moving_path, out_transform_path, out_img_path, verbose=F
 	sitk.WriteTransform(outTx, out_transform_path)
 	sitk.WriteImage(out_img, out_img_path)
 
-def transform(moving_path, transform_path, target_path=None):
+def transform(moving_img_path, transform_path, fixed_img_path, out_img_path="default",
+	path_to_bis="C:\\yale\\bioimagesuite35\\bin\\"):
+	"""Transforms without scaling image. fixed_img_path is to define final dimensions."""
+	
+	temp_img_path = ".\\temp_out_img.nii"
+	temp_xform_path = ".\\temp_out_xform"
+
+	if out_img_path == "default":
+		out_img_path = add_to_filename(moving_img_path, "-reg")
+	
+	cmd = ''.join([path_to_bis, "bis_linearintensityregister.bat -inp ", fixed_img_path,
+			  " -inp2 ", moving_img_path, " -out ", temp_xform_path,
+			  " -useinitial ", transform_path, " -iterations 0"]).replace("\\","/")
+
+	subprocess.run(cmd.split())
+	shutil.copy(temp_img_path, out_img_path)
+	os.remove(temp_img_path)
+	os.remove(temp_xform_path)
+
+	return out_img_path
+
+def transform_sitk(moving_path, transform_path, target_path=None):
 	"""Transforms without scaling image"""
 	
 	if target_path is None:

@@ -228,7 +228,7 @@ def reg_niis_sitk(fixed_img_type, moving_img_type, patient_nii_paths,
 	
 	return out_img_path, out_transform_path
 
-def transform_niis(in_img_path, transform_paths, target_imgs, out_img_path=None, overwrite=True):
+def transform_niis(in_img_path, transform_paths, target_dims, out_img_path=None, overwrite=True):
 	"""Transforms image based on previous transform and scaling to target_dims."""
 	
 	if out_img_path is None:
@@ -242,9 +242,8 @@ def transform_niis(in_img_path, transform_paths, target_imgs, out_img_path=None,
 	shutil.copyfile(in_img_path, temp_path)
 	
 	for index, transform_path in enumerate(transform_paths):
-		target_img = target_imgs[index]
 		hf.transform(temp_path, transform_path)
-		save_nii(hf.rescale(hf.ni_load(temp_path)[0], target_img.shape)[0], temp_path)
+		save_nii(hf.rescale(hf.ni_load(temp_path)[0], target_dims[index])[0], temp_path)
 	
 	if temp_path != out_img_path:
 		if os.path.exists(out_img_path):
