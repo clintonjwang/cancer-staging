@@ -20,7 +20,7 @@ import transforms as tr
 ### IMAGE LOADING
 ###########################
 
-def dcm_load(path2series):
+def dcm_load(path2series, flip_x=False, flip_y=False):
 	"""
 	Load a dcm series as a 3D array along with its dimensions.
 	
@@ -34,7 +34,7 @@ def dcm_load(path2series):
 		dicom_series_to_nifti(path2series, tmp_fn)
 		#dicom_to_nifti(path2series, tmp_fn)
 
-		ret = ni_load(tmp_fn)
+		ret = ni_load(tmp_fn, flip_x, flip_y)
 
 	except Exception as e:
 		print(path2series, e)
@@ -125,21 +125,18 @@ def get_spect_series(path, just_header=False):
 
 	return canon_img
 
-def save_nii(img, dest, dims=(1,1,1), affine=None, flip_x=False, flip_y=False):
-	if affine is None:
-		affine = np.eye(4)
-		for i in range(3):
-			affine[i,i] = dims[i]
-		if len(img.shape) == 4:
-			nii = nib.Nifti1Image(img[::(-1)**flip_x,::(-1)**flip_y,:,:], affine)
-		else:
-			nii = nib.Nifti1Image(img[::(-1)**flip_x,::(-1)**flip_y,:], affine)
-		nib.save(nii, dest)
+def save_nii(img, dest, dims=(1,1,1), flip_x=False, flip_y=False):
+	affine = np.eye(4)
+	for i in range(3):
+		affine[i,i] = dims[i]
+	if len(img.shape) == 4:
+		nii = nib.Nifti1Image(img[::(-1)**flip_x,::(-1)**flip_y,:,:], affine)
 	else:
-		nib.save(img, dest)
+		nii = nib.Nifti1Image(img[::(-1)**flip_x,::(-1)**flip_y,:], affine)
+	nib.save(nii, dest)
 
 ###########################
-### IMAGE PREPROCESSING
+### MASKS
 ###########################
 
 def create_threshold_mask(img, mask_filename, threshold, template_mask_fn=None):
@@ -194,6 +191,11 @@ def rescale_mask(mask_file, orig_dims, dims):
 
 	return img
 
+
+###########################
+### IMAGE PREPROCESSING
+###########################
+
 def rescale(img, target_dims, cur_dims=None):
 	if cur_dims is not None:
 		vox_scale = [float(cur_dims[i]/target_dims[i]) for i in range(3)]
@@ -212,7 +214,7 @@ def normalize(img):
 ###########################
 
 def reg_bis(fixed_img_path, moving_img_path, out_transform_path="default", out_img_path="default",
-	path_to_bis="C:\\yale\\bioimagesuite35\\bin\\"):
+	path_to_bis="C:\\yale\\bioimagesuite35\\bin\\", overwrite=True):
 	"""BioImageSuite. Shutil required because BIS cannot output to other drives,
 	and because the output image argument is broken."""
 
@@ -224,6 +226,10 @@ def reg_bis(fixed_img_path, moving_img_path, out_transform_path="default", out_i
 
 	if out_img_path == "default":
 		out_img_path = add_to_filename(moving_img_path, "-reg")
+
+	if (not overwrite) and os.path.exists(out_img_path):
+		print(out_img_path, "already exists. Skipping registration.")
+		return None
 	
 	cmd = ''.join([path_to_bis, "bis_linearintensityregister.bat -inp ", fixed_img_path,
 			  " -inp2 ", moving_img_path, " -out ", temp_xform_path]).replace("\\","/")
@@ -452,7 +458,7 @@ def reg_sitk(fixed_path, moving_path, out_transform_path, out_img_path, verbose=
 
 def transform(moving_img_path, transform_path, fixed_img_path, out_img_path="default",
 	path_to_bis="C:\\yale\\bioimagesuite35\\bin\\"):
-	"""Transforms without scaling image. fixed_img_path is to define final dimensions."""
+	"""Transforms based on existing transform. fixed_img_path is to define final dimensions."""
 	
 	temp_img_path = ".\\temp_out_img.nii"
 	temp_xform_path = ".\\temp_out_xform"
@@ -551,6 +557,8 @@ def plot_section_auto(orig_img, normalize=False, frac=None):
 		if normalize:
 			img[0,0,:]=-1
 			img[0,-1,:]=.8
+		if frac is not None:
+			print("frac does nothing for 3D images.")
 
 		plt.subplot(131)
 		_plot_without_axes(np.transpose(img[:, :, img.shape[2]//4], (1,0)), cmap='gray')
@@ -617,3 +625,14 @@ def draw_slice(img, filename, slice=None):
 def add_to_filename(fn, addition):
 	x = fn.find(".")
 	return fn[:x] + addition + fn[x:]
+
+def str_to_lists(raw, dtype=float):
+    bigstr = str(raw)
+    bigstr = re.sub(r'(\d)\s+(\d)', r'\1,\2', bigstr)
+    bigstr = re.sub(r'\]\s*\[', r';', bigstr)
+    bigstr = bigstr.replace('[', '')
+    bigstr = bigstr.replace(']', '')
+    bigstr = bigstr.replace(' ', '')
+    ret = [[dtype(x) for x in sublist.split(',')] for sublist in bigstr.split(';')]
+
+    return ret
