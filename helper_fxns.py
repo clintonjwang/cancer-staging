@@ -30,9 +30,8 @@ def dcm_load(path2series, flip_x=False, flip_y=False):
 	"""
 
 	try:
-		tmp_fn = "tmp.nii"
+		tmp_fn = "tmp.nii.gz"
 		dicom_series_to_nifti(path2series, tmp_fn)
-		#dicom_to_nifti(path2series, tmp_fn)
 
 		ret = ni_load(tmp_fn, flip_x, flip_y)
 
