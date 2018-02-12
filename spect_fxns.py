@@ -1,10 +1,11 @@
 import copy
-import helper_fxns as hf
+import niftiutils.helper_fxns as hf
+import niftiutils.transforms as tr
+import niftiutils.registration as regs
 import itertools
 import nibabel as nib
 import numpy as np
 import os
-import pandas as pd
 import shutil
 import time
 
@@ -29,14 +30,16 @@ def is_segmented(patient_id):
 		print(patient_id)
 
 def set_paths(patient_id, patient_df, dcm_paths, nii_paths, mask_paths):
+	img_base_dir = "Z:\\Isa\\spect\\"
+
 	if not os.path.exists("Z:\\Isa\\"+str(patient_id)):
 		os.makedirs("Z:\\Isa\\"+str(patient_id))
 		
 	base_dir = "Z:\\Isa\\"+str(patient_id)+"\\"
 
-	dcm_paths[patient_id] = {"ct": "Z:\\Isa\\spect\\"+str(patient_df.loc[patient_id, "SPECT"])+"\\CT",
-			"fused": "Z:\\Isa\\spect\\"+str(patient_df.loc[patient_id, "SPECT"])+"\\Fused",
-			"spect": "Z:\\Isa\\spect\\"+str(patient_df.loc[patient_id, "SPECT"])+"\\SPECT",
+	dcm_paths[patient_id] = {"ct": img_base_dir+str(patient_df.loc[patient_id, "SPECT"])+"\\CT",
+			"fused": img_base_dir+str(patient_df.loc[patient_id, "SPECT"])+"\\Fused",
+			"spect": img_base_dir+str(patient_df.loc[patient_id, "SPECT"])+"\\SPECT",
 			"fumri-art": "Z:\\Isa\\fumri\\"+str(patient_df.loc[patient_id, "FU1/2-MRI"])+"\\T1_AP",
 			"fumri-pre": "Z:\\Isa\\fumri\\"+str(patient_df.loc[patient_id, "FU1/2-MRI"])+"\\T1_BL",
 			"blmri-art": "Z:\\Isa\\blmri\\"+str(patient_df.loc[patient_id, "BL-MRI"])+"\\T1_AP",
@@ -60,21 +63,21 @@ def set_paths(patient_id, patient_df, dcm_paths, nii_paths, mask_paths):
 				"viable-tumor-fu-scaled": base_dir + "FU-segs\\viable_tumor-scaled.ids"}
 
 	if not os.path.exists(dcm_paths[patient_id]["spect"]):
-		spect_path = "Z:\\Isa\\spect\\"+str(patient_df.loc[patient_id, "SPECT"])
+		spect_path = img_base_dir+str(patient_df.loc[patient_id, "SPECT"])
 		for fn in os.listdir(spect_path):
 			if 'recon - ac' in fn:
 				dcm_paths[patient_id]['spect'] = spect_path + "\\" + fn
 				break
 				
 	if not os.path.exists(dcm_paths[patient_id]["ct"]):
-		spect_path = "Z:\\Isa\\spect\\"+str(patient_df.loc[patient_id, "SPECT"])
+		spect_path = img_base_dir+str(patient_df.loc[patient_id, "SPECT"])
 		for fn in os.listdir(spect_path):
 			if 'y90 sirs' in fn and 'ac' not in fn:
 				dcm_paths[patient_id]['ct'] = spect_path + "\\" + fn
 				break
 				
 	if not os.path.exists(dcm_paths[patient_id]["fused"]):
-		spect_path = "Z:\\Isa\\spect\\"+str(patient_df.loc[patient_id, "SPECT"])
+		spect_path = img_base_dir+str(patient_df.loc[patient_id, "SPECT"])
 		for fn in os.listdir(spect_path):
 			if 'fused tran' in fn:
 				dcm_paths[patient_id]['fused'] = spect_path + "\\" + fn
@@ -168,13 +171,11 @@ def reg_nii(fixed_img_type, moving_img_type, pat_nii_paths,
 			 out_img_path="default", out_transform_path="default", overwrite=False):
 	"""Registers images. 
 	"""
-	import importlib
-	importlib.reload(hf)
 	
 	if out_transform_path == "default":
 		out_transform_path = pat_nii_paths['base'] + moving_img_type+'_'+fixed_img_type+'_xform.txt'
 	
-	out_img_path, out_transform_path = hf.reg_bis(pat_nii_paths[fixed_img_type],
+	out_img_path, out_transform_path = regs.reg_bis(pat_nii_paths[fixed_img_type],
 				pat_nii_paths[moving_img_type], out_transform_path, out_img_path, overwrite=overwrite)
 	
 	return out_img_path, out_transform_path
@@ -206,10 +207,10 @@ def reg_nii_sitk(fixed_img_type, moving_img_type, pat_nii_paths,
 		print(fixed_img_type, "and", moving_img_type, "have the same shape. Skipping registration.")
 		return None
 	
-	moving_img_scaled, _ = hf.rescale(moving_img, fixed_img.shape)
+	moving_img_scaled, _ = tr.rescale(moving_img, fixed_img.shape)
 	hf.save_nii(moving_img_scaled, temp_path, dims=voxdims)
 	
-	hf.reg_img(pat_nii_paths[fixed_img_type], temp_path, out_transform_path, out_img_path, verbose=verbose, reg_type=reg_type)
+	regs.reg_img(pat_nii_paths[fixed_img_type], temp_path, out_transform_path, out_img_path, verbose=verbose, reg_type=reg_type)
 	
 	os.remove(temp_path)
 	
